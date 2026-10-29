@@ -1,0 +1,13 @@
+{
+  "name": "secret-codebook",
+  "version": "1.0.0",
+  "description": "Private dictation for Wispr Flow: say code words out loud, see the real secrets only on your screen.",
+  "private": true,
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

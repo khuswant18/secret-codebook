@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- connect-src 'none': this page cannot send anything over the network. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="description" content="Private dictation for Wispr Flow. Say code words out loud; your real secrets appear only on your screen.">
+  <title>Secret Codebook</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231f2a44'/%3E%3Cpath d='M10 15v-3a6 6 0 0 1 12 0v3' fill='none' stroke='%23f5b942' stroke-width='2.5'/%3E%3Crect x='8' y='15' width='16' height='11' rx='2.5' fill='%23f5b942'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <strong>Secret Codebook</strong>
+        <span class="brand-sub">Private dictation for Wispr Flow</span>
+      </div>
+    </div>
+    <button id="lock-btn" class="ghost" type="button" hidden>Lock</button>
+  </header>
+
+  <main>
+    <!-- Locked: create or unlock the codebook -->
+    <section id="lock-screen" class="lock-screen">
+      <div class="lock-card card">
+        <div id="setup-view" hidden>
+          <h1>Speak in code.<br>Type the truth.</h1>
+          <p class="lead">Dictate with Wispr Flow using code words like <em>“project mango”</em>. People nearby hear only the code. Your real names, numbers and plans appear on your screen, decoded on this device.</p>
+          <form id="setup-form" class="stack">
+            <label>Choose a passphrase
+              <input id="setup-pass" type="password" autocomplete="new-password" minlength="8" required>
+            </label>
+            <label>Repeat it
+              <input id="setup-confirm" type="password" autocomplete="new-password" minlength="8" required>
+            </label>
+            <button class="primary" type="submit">Create my codebook</button>
+          </form>
+          <div class="divider"><span>or</span></div>
+          <button id="demo-btn" class="secondary wide" type="button">Try the demo codebook</button>
+          <p class="fine">Demo passphrase: <code>demo1234</code></p>
+        </div>
+
+        <div id="unlock-view" hidden>
+          <h1>Unlock your codebook</h1>
+          <p class="lead">Your codebook is encrypted in this browser. Enter your passphrase to use it.</p>
+          <form id="unlock-form" class="stack">
+            <label>Passphrase
+              <input id="unlock-pass" type="password" autocomplete="current-password" required>
+            </label>
+            <button class="primary" type="submit">Unlock</button>
+          </form>
+          <div class="row-links">
+            <button id="unlock-import-btn" class="link" type="button">Restore a backup</button>
+            <button id="reset-btn" class="link danger" type="button">Forgot passphrase? Reset</button>
+          </div>
+        </div>
+
+        <p id="lock-error" class="error" role="alert"></p>
+      </div>
+    </section>
+
+    <!-- Unlocked -->
+    <section id="app-screen" class="app-grid" hidden>
+      <div class="card pad">
+        <div class="card-head">
+          <h2>Secret pad</h2>
+          <span id="match-count" class="pill">0 secrets</span>
+        </div>
+        <label for="spoken" class="hint">Click here, hold <kbd>fn</kbd> and dictate with Wispr Flow. Say your code words out loud.</label>
+        <textarea id="spoken" rows="5" spellcheck="false" placeholder="Try saying: “Tell code falcon is confirmed and send project mango my usual number.”"></textarea>
+
+        <div class="output-head">
+          <h3>Decoded</h3>
+          <div class="output-tools">
+            <label class="switch">
+              <input id="discreet" type="checkbox" checked>
+              <span>Discreet view</span>
+            </label>
+            <button id="peek-btn" class="secondary small" type="button">Hold to peek</button>
+          </div>
+        </div>
+        <div id="decoded" class="decoded blurred" aria-live="polite"></div>
+
+        <div class="actions">
+          <button id="copy-btn" class="primary" type="button">Copy &amp; clear <kbd>⌘/Ctrl ↵</kbd></button>
+          <button id="clear-btn" class="secondary" type="button">Clear</button>
+        </div>
+      </div>
+
+      <div class="card codebook">
+        <div class="card-head">
+          <h2>Codebook</h2>
+          <span id="entry-count" class="pill">0 code words</span>
+        </div>
+        <form id="entry-form" class="entry-form">
+          <label>Code phrase you will say
+            <input id="entry-code" type="text" autocomplete="off" spellcheck="false" placeholder="project mango" required>
+          </label>
+          <label>Secret it stands for
+            <span class="secret-input">
+              <input id="entry-value" class="masked-input" type="text" autocomplete="off" spellcheck="false" placeholder="Acme Robotics Pvt. Ltd." required>
+              <button id="entry-reveal" class="ghost small" type="button" aria-pressed="false">Show</button>
+            </span>
+          </label>
+          <div class="actions">
+            <button id="entry-submit" class="primary" type="submit">Add code word</button>
+            <button id="entry-cancel" class="secondary" type="button" hidden>Cancel</button>
+          </div>
+        </form>
+        <p class="fine">Tip: list variants Wispr might write with <code>|</code>, e.g. <code>item seven | item 7</code>.</p>
+        <ul id="entry-messages" class="messages"></ul>
+        <ul id="entry-list" class="entry-list"></ul>
+      </div>
+
+      <div class="card settings">
+        <h2>Backup &amp; safety</h2>
+        <p class="fine">Everything stays in this browser, encrypted with AES-256. The page is blocked from making network requests. It locks itself after 5 minutes of inactivity.</p>
+        <div class="actions">
+          <button id="export-btn" class="secondary" type="button">Export encrypted backup</button>
+          <button id="import-btn" class="secondary" type="button">Restore a backup</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <input id="import-file" type="file" accept="application/json,.json" hidden>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="src/codebook.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
